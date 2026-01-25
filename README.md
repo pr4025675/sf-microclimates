@@ -1,0 +1,226 @@
+# SF Microclimates API
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Free API](https://img.shields.io/badge/API-Free%20to%20use-blue.svg)](https://microclimates.solofounders.com)
+
+**Real weather for 50 San Francisco neighborhoods. Free API. No key required.**
+
+🌐 **Live API:** [microclimates.solofounders.com](https://microclimates.solofounders.com)
+
+Use with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Clawdbot](https://clawd.bot), or build into your apps.
+
+Built by [Solo Founders](https://solofounders.com).
+
+---
+
+## Why This Exists
+
+SF has the most dramatic microclimates of any US city.
+
+Weather apps say "San Francisco: 58°F" — but that's useless. It can be 52°F and foggy in the Outer Sunset while it's 65°F and sunny in the Mission, just 3 miles apart.
+
+This API aggregates 150+ outdoor sensors and groups them by neighborhood, so you get *actual* local temperatures — not some airport reading from SFO.
+
+---
+
+## Try It Instantly
+
+```bash
+curl https://microclimates.solofounders.com/sf-weather/mission
+```
+
+```json
+{
+  "neighborhood": "mission",
+  "name": "Mission District",
+  "temp_f": 58,
+  "humidity": 52,
+  "sensor_count": 8
+}
+```
+
+No API key. No signup. Just use it.
+
+---
+
+## Add to Claude Code or Clawdbot
+
+Create a skill file to give your AI agent hyperlocal SF weather awareness:
+
+```markdown
+# SF Microclimates Skill
+
+Get real-time SF neighborhood weather.
+
+## Triggers
+- "weather in [neighborhood]"
+- "sf weather mission vs sunset"
+- "is it foggy in the richmond?"
+
+## Usage
+curl https://microclimates.solofounders.com/sf-weather/marina
+
+## Neighborhoods
+mission, castro, marina, soma, haight, noe_valley,
+outer_sunset, inner_sunset, outer_richmond, presidio,
+north_beach, pacific_heights, potrero, twin_peaks...
+```
+
+---
+
+## Use Cases
+
+- **AI agents** — Give your agent real local weather context
+- **Home automation** — Trigger based on your actual neighborhood temp
+- **Slack/Discord bots** — Settle "is it foggy?" arguments
+- **Travel apps** — Show tourists what to actually expect
+- **Personal dashboards** — Finally, weather that matches your window
+
+---
+
+## Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /sf-weather` | All 50 neighborhoods |
+| `GET /sf-weather/:neighborhood` | Single neighborhood |
+| `GET /neighborhoods` | List all available |
+
+---
+
+## 50 Neighborhoods
+
+From Marina to Noe Valley, Presidio to Twin Peaks — every SF neighborhood mapped.
+
+```bash
+curl https://microclimates.solofounders.com/neighborhoods
+```
+
+Includes: `mission`, `castro`, `marina`, `soma`, `haight`, `noe_valley`, `outer_sunset`, `inner_richmond`, `north_beach`, `pacific_heights`, `potrero`, `dogpatch`, `bayview`, `twin_peaks`, `presidio`, `tenderloin`, `chinatown`, `japantown`, `cole_valley`, `glen_park`, and 30 more.
+
+---
+
+## Response Format
+
+### Single Neighborhood
+```json
+{
+  "updated": "2026-01-25T23:00:00.000Z",
+  "neighborhood": "outer_sunset",
+  "name": "Outer Sunset",
+  "temp_f": 52,
+  "humidity": 78,
+  "sensor_count": 15
+}
+```
+
+### All Neighborhoods
+```json
+{
+  "updated": "2026-01-25T23:00:00.000Z",
+  "neighborhoods": {
+    "mission": { "temp_f": 58, "humidity": 52, "sensor_count": 8 },
+    "outer_sunset": { "temp_f": 52, "humidity": 78, "sensor_count": 15 },
+    "marina": { "temp_f": 55, "humidity": 65, "sensor_count": 6 }
+  }
+}
+```
+
+---
+
+## Self-Hosting
+
+Want to run your own instance?
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/solo-founders/sf-microclimates.git
+cd sf-microclimates
+npm install
+```
+
+### 2. Get a PurpleAir API Key
+
+This API uses [PurpleAir](https://www.purpleair.com/) sensors. Sign up at [develop.purpleair.com](https://develop.purpleair.com/) — free for personal use.
+
+### 3. Create KV Namespace
+
+```bash
+wrangler kv:namespace create "CACHE"
+```
+
+Add the output to `wrangler.toml`:
+```toml
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id"
+```
+
+### 4. Set Your API Key
+
+```bash
+wrangler secret put PURPLEAIR_API_KEY
+```
+
+### 5. Deploy
+
+```bash
+wrangler deploy
+```
+
+### Local Development
+
+```bash
+echo "PURPLEAIR_API_KEY=your-key" > .dev.vars
+wrangler dev
+```
+
+---
+
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CACHE_TTL_SECONDS` | `3600` | Cache duration (1 hour) |
+| `RATE_LIMIT_PER_MINUTE` | `60` | Max requests per IP |
+
+---
+
+## How It Works
+
+1. Request comes in → rate limit check
+2. Check Cloudflare KV cache → return if fresh
+3. Cache miss → fetch outdoor sensors from PurpleAir (`location_type=0`)
+4. Group sensors by neighborhood GPS bounding boxes
+5. Calculate averages, cache for 1 hour
+6. Return JSON with CORS headers
+
+---
+
+## Fork for Your City
+
+LA, Seattle, NYC, Chicago, Austin — every city has microclimates.
+
+The neighborhood bounding boxes are in `src/index.ts`. To adapt:
+
+1. Update `SF_NEIGHBORHOODS` with your city's areas + GPS coordinates
+2. Change the PurpleAir bounding box to your city
+3. Update branding
+4. Deploy
+
+PRs welcome! We'd love to see `la-microclimates`, `nyc-microclimates`, etc.
+
+---
+
+## Credits
+
+- Sensor data: [PurpleAir](https://www.purpleair.com/)
+- Infrastructure: [Cloudflare Workers](https://workers.cloudflare.com/)
+- Built by: [Solo Founders](https://solofounders.com)
+
+---
+
+## License
+
+MIT — use it however you want.

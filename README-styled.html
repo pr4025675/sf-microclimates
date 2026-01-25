@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SF Microclimates API - README</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #24292e; }
+    h1 { border-bottom: 1px solid #eaecef; padding-bottom: 10px; }
+    h2 { border-bottom: 1px solid #eaecef; padding-bottom: 8px; margin-top: 30px; }
+    h3 { margin-top: 24px; }
+    code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-size: 14px; }
+    pre { background: #f6f8fa; padding: 16px; border-radius: 6px; overflow-x: auto; }
+    pre code { background: none; padding: 0; }
+    a { color: #0366d6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th, td { border: 1px solid #dfe2e5; padding: 8px 12px; text-align: left; }
+    th { background: #f6f8fa; }
+    hr { border: none; border-top: 1px solid #eaecef; margin: 24px 0; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+<h1>SF Microclimates API</h1>
+
+<p>
+<img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT">
+<img src="https://img.shields.io/badge/API-Free%20to%20use-blue.svg" alt="Free API">
+</p>
+
+<p><strong>Real weather for 50 San Francisco neighborhoods. Free API. No key required.</strong></p>
+
+<p>🌐 <strong>Live API:</strong> <a href="https://microclimates.solofounders.com">microclimates.solofounders.com</a></p>
+
+<p>Use with <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a>, <a href="https://clawd.bot">Clawdbot</a>, or build into your apps.</p>
+
+<p>Built by <a href="https://solofounders.com">Solo Founders</a>.</p>
+
+<hr>
+
+<h2>Why This Exists</h2>
+
+<p>SF has the most dramatic microclimates of any US city.</p>
+
+<p>Weather apps say "San Francisco: 58°F" — but that's useless. It can be 52°F and foggy in the Outer Sunset while it's 65°F and sunny in the Mission, just 3 miles apart.</p>
+
+<p>This API aggregates 150+ outdoor sensors and groups them by neighborhood, so you get <em>actual</em> local temperatures — not some airport reading from SFO.</p>
+
+<hr>
+
+<h2>Try It Instantly</h2>
+
+<pre><code>curl https://microclimates.solofounders.com/sf-weather/mission</code></pre>
+
+<pre><code>{
+  "neighborhood": "mission",
+  "name": "Mission District",
+  "temp_f": 58,
+  "humidity": 52,
+  "sensor_count": 8
+}</code></pre>
+
+<p>No API key. No signup. Just use it.</p>
+
+<hr>
+
+<h2>Add to Claude Code or Clawdbot</h2>
+
+<p>Create a skill file to give your AI agent hyperlocal SF weather awareness:</p>
+
+<pre><code># SF Microclimates Skill
+
+Get real-time SF neighborhood weather.
+
+## Triggers
+- "weather in [neighborhood]"
+- "sf weather mission vs sunset"
+- "is it foggy in the richmond?"
+
+## Usage
+curl https://microclimates.solofounders.com/sf-weather/marina
+
+## Neighborhoods
+mission, castro, marina, soma, haight, noe_valley,
+outer_sunset, inner_sunset, outer_richmond, presidio,
+north_beach, pacific_heights, potrero, twin_peaks...</code></pre>
+
+<hr>
+
+<h2>Use Cases</h2>
+
+<ul>
+  <li><strong>AI agents</strong> — Give your agent real local weather context</li>
+  <li><strong>Home automation</strong> — Trigger based on your actual neighborhood temp</li>
+  <li><strong>Slack/Discord bots</strong> — Settle "is it foggy?" arguments</li>
+  <li><strong>Travel apps</strong> — Show tourists what to actually expect</li>
+  <li><strong>Personal dashboards</strong> — Finally, weather that matches your window</li>
+</ul>
+
+<hr>
+
+<h2>Endpoints</h2>
+
+<table>
+  <tr><th>Endpoint</th><th>Description</th></tr>
+  <tr><td><code>GET /sf-weather</code></td><td>All 50 neighborhoods</td></tr>
+  <tr><td><code>GET /sf-weather/:neighborhood</code></td><td>Single neighborhood</td></tr>
+  <tr><td><code>GET /neighborhoods</code></td><td>List all available</td></tr>
+</table>
+
+<hr>
+
+<h2>50 Neighborhoods</h2>
+
+<p>From Marina to Noe Valley, Presidio to Twin Peaks — every SF neighborhood mapped.</p>
+
+<pre><code>curl https://microclimates.solofounders.com/neighborhoods</code></pre>
+
+<p>Includes: <code>mission</code>, <code>castro</code>, <code>marina</code>, <code>soma</code>, <code>haight</code>, <code>noe_valley</code>, <code>outer_sunset</code>, <code>inner_richmond</code>, <code>north_beach</code>, <code>pacific_heights</code>, <code>potrero</code>, <code>dogpatch</code>, <code>bayview</code>, <code>twin_peaks</code>, <code>presidio</code>, <code>tenderloin</code>, <code>chinatown</code>, <code>japantown</code>, <code>cole_valley</code>, <code>glen_park</code>, and 30 more.</p>
+
+<hr>
+
+<h2>Response Format</h2>
+
+<h3>Single Neighborhood</h3>
+<pre><code>{
+  "updated": "2026-01-25T23:00:00.000Z",
+  "neighborhood": "outer_sunset",
+  "name": "Outer Sunset",
+  "temp_f": 52,
+  "humidity": 78,
+  "sensor_count": 15
+}</code></pre>
+
+<h3>All Neighborhoods</h3>
+<pre><code>{
+  "updated": "2026-01-25T23:00:00.000Z",
+  "neighborhoods": {
+    "mission": { "temp_f": 58, "humidity": 52, "sensor_count": 8 },
+    "outer_sunset": { "temp_f": 52, "humidity": 78, "sensor_count": 15 },
+    "marina": { "temp_f": 55, "humidity": 65, "sensor_count": 6 }
+  }
+}</code></pre>
+
+<hr>
+
+<h2>Self-Hosting</h2>
+
+<p>Want to run your own instance?</p>
+
+<h3>1. Clone &amp; Install</h3>
+<pre><code>git clone https://github.com/solo-founders/sf-microclimates.git
+cd sf-microclimates
+npm install</code></pre>
+
+<h3>2. Get a PurpleAir API Key</h3>
+<p>This API uses <a href="https://www.purpleair.com/">PurpleAir</a> sensors. Sign up at <a href="https://develop.purpleair.com/">develop.purpleair.com</a> — free for personal use.</p>
+
+<h3>3. Create KV Namespace</h3>
+<pre><code>wrangler kv:namespace create "CACHE"</code></pre>
+
+<p>Add the output to <code>wrangler.toml</code>:</p>
+<pre><code>[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id"</code></pre>
+
+<h3>4. Set Your API Key</h3>
+<pre><code>wrangler secret put PURPLEAIR_API_KEY</code></pre>
+
+<h3>5. Deploy</h3>
+<pre><code>wrangler deploy</code></pre>
+
+<h3>Local Development</h3>
+<pre><code>echo "PURPLEAIR_API_KEY=your-key" > .dev.vars
+wrangler dev</code></pre>
+
+<hr>
+
+<h2>Configuration</h2>
+
+<table>
+  <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+  <tr><td><code>CACHE_TTL_SECONDS</code></td><td><code>3600</code></td><td>Cache duration (1 hour)</td></tr>
+  <tr><td><code>RATE_LIMIT_PER_MINUTE</code></td><td><code>60</code></td><td>Max requests per IP</td></tr>
+</table>
+
+<hr>
+
+<h2>How It Works</h2>
+
+<ol>
+  <li>Request comes in → rate limit check</li>
+  <li>Check Cloudflare KV cache → return if fresh</li>
+  <li>Cache miss → fetch outdoor sensors from PurpleAir (<code>location_type=0</code>)</li>
+  <li>Group sensors by neighborhood GPS bounding boxes</li>
+  <li>Calculate averages, cache for 1 hour</li>
+  <li>Return JSON with CORS headers</li>
+</ol>
+
+<hr>
+
+<h2>Fork for Your City</h2>
+
+<p>LA, Seattle, NYC, Chicago, Austin — every city has microclimates.</p>
+
+<p>The neighborhood bounding boxes are in <code>src/index.ts</code>. To adapt:</p>
+
+<ol>
+  <li>Update <code>SF_NEIGHBORHOODS</code> with your city's areas + GPS coordinates</li>
+  <li>Change the PurpleAir bounding box to your city</li>
+  <li>Update branding</li>
+  <li>Deploy</li>
+</ol>
+
+<p>PRs welcome! We'd love to see <code>la-microclimates</code>, <code>nyc-microclimates</code>, etc.</p>
+
+<hr>
+
+<h2>Credits</h2>
+
+<ul>
+  <li>Sensor data: <a href="https://www.purpleair.com/">PurpleAir</a></li>
+  <li>Infrastructure: <a href="https://workers.cloudflare.com/">Cloudflare Workers</a></li>
+  <li>Built by: <a href="https://solofounders.com">Solo Founders</a></li>
+</ul>
+
+<hr>
+
+<h2>License</h2>
+
+<p>MIT — use it however you want.</p>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+name = "sf-microclimates"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+routes = [
+  { pattern = "microclimates.solofounders.com/*", zone_name = "solofounders.com" }
+]
+
+[vars]
+CACHE_TTL_SECONDS = "3600"
+RATE_LIMIT_PER_MINUTE = "60"
