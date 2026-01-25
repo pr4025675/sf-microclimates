@@ -74,7 +74,7 @@ const LANDING_HTML = `<!DOCTYPE html>
         
         @media (max-width: 600px) {
             .nav-links { gap: 12px; }
-            .nav-links a:not(.nav-btn) { display: none; }
+            .nav-links a:not(.nav-btn):not(.github-link) { display: none; }
         }
     </style>
 </head>
