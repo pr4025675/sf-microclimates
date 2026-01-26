@@ -158,6 +158,35 @@ function isInBounds(lat: number, lng: number, bounds: { nwLat: number; nwLng: nu
   return lat <= bounds.nwLat && lat >= bounds.seLat && lng >= bounds.nwLng && lng <= bounds.seLng;
 }
 
+function getNeighborhoodCenter(bounds: { nwLat: number; nwLng: number; seLat: number; seLng: number }): { lat: number; lng: number } {
+  return {
+    lat: (bounds.nwLat + bounds.seLat) / 2,
+    lng: (bounds.nwLng + bounds.seLng) / 2
+  };
+}
+
+function getDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  return Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
+}
+
+function findNearestNeighborhood(targetKey: string, availableKeys: string[]): string | null {
+  if (availableKeys.length === 0) return null;
+  const targetCenter = getNeighborhoodCenter(SF_NEIGHBORHOODS[targetKey].bounds);
+  
+  let nearest: string | null = null;
+  let minDistance = Infinity;
+  
+  for (const key of availableKeys) {
+    const center = getNeighborhoodCenter(SF_NEIGHBORHOODS[key].bounds);
+    const distance = getDistance(targetCenter.lat, targetCenter.lng, center.lat, center.lng);
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearest = key;
+    }
+  }
+  return nearest;
+}
+
 function assignToNeighborhood(lat: number, lng: number): string | null {
   for (const [key, neighborhood] of Object.entries(SF_NEIGHBORHOODS)) {
     if (isInBounds(lat, lng, neighborhood.bounds)) return key;
@@ -286,11 +315,38 @@ export default {
           return errorResponse(`Unknown neighborhood: ${neighborhoodKey}`, 404);
         }
         const data = await getWeatherData(env);
+        
+        // Check if this neighborhood has sensor data
+        const neighborhoodData = data.neighborhoods[neighborhoodKey];
+        if (neighborhoodData.sensor_count === 0) {
+          // Find nearest neighborhood with data
+          const availableKeys = Object.keys(data.neighborhoods).filter(k => data.neighborhoods[k].sensor_count > 0);
+          const nearestKey = findNearestNeighborhood(neighborhoodKey, availableKeys);
+          
+          if (nearestKey) {
+            const nearestData = data.neighborhoods[nearestKey];
+            return jsonResponse({
+              updated: data.updated,
+              neighborhood: neighborhoodKey,
+              name: SF_NEIGHBORHOODS[neighborhoodKey].name,
+              temp_f: nearestData.temp_f,
+              humidity: nearestData.humidity,
+              sensor_count: 0,
+              fallback: {
+                source_neighborhood: nearestKey,
+                source_name: SF_NEIGHBORHOODS[nearestKey].name,
+                source_sensor_count: nearestData.sensor_count,
+                reason: "No sensors in requested neighborhood"
+              }
+            });
+          }
+        }
+        
         return jsonResponse({
           updated: data.updated,
           neighborhood: neighborhoodKey,
           name: SF_NEIGHBORHOODS[neighborhoodKey].name,
-          ...data.neighborhoods[neighborhoodKey]
+          ...neighborhoodData
         });
       }
 
