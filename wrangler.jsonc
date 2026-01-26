@@ -1,14 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "sf-microclimates",
+  "name": "sf-microclimates-api",
   "main": "src/index.ts",
   "compatibility_date": "2024-01-01",
-  "routes": [
-    {
-      "pattern": "microclimates.solofounders.com/*",
-      "zone_name": "solofounders.com"
-    }
-  ],
   "vars": {
     "CACHE_TTL_SECONDS": "3600"
   },

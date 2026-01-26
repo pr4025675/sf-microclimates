@@ -63,7 +63,7 @@ const LANDING_HTML = `<!DOCTYPE html>
         <div class="endpoint"><span class="endpoint-path">GET /neighborhoods</span><span class="endpoint-desc">List all available</span></div>
 
         <h2>Available Neighborhoods</h2>
-        <p>49 neighborhoods including: mission, castro, marina, soma, haight, noe_valley, outer_sunset, inner_richmond, north_beach, pacific_heights, potrero, twin_peaks, hayes_valley, presidio, and more.</p>
+        <p>50 neighborhoods including: mission, castro, marina, soma, haight, noe_valley, outer_sunset, inner_richmond, north_beach, pacific_heights, potrero, twin_peaks, hayes_valley, presidio, and more.</p>
         <p>Use <code>GET /neighborhoods</code> for the full list.</p>
 
         <h2>About</h2>
@@ -94,6 +94,7 @@ const SF_NEIGHBORHOODS: Record<string, { name: string; bounds: { nwLat: number; 
   nob_hill: { name: "Nob Hill", bounds: { nwLat: 37.7950, nwLng: -122.4200, seLat: 37.7880, seLng: -122.4080 } },
   marina: { name: "Marina", bounds: { nwLat: 37.8080, nwLng: -122.4500, seLat: 37.7980, seLng: -122.4280 } },
   pacific_heights: { name: "Pacific Heights", bounds: { nwLat: 37.7980, nwLng: -122.4450, seLat: 37.7870, seLng: -122.4200 } },
+  japantown: { name: "Japantown", bounds: { nwLat: 37.7870, nwLng: -122.4350, seLat: 37.7820, seLng: -122.4280 } },
   presidio: { name: "Presidio", bounds: { nwLat: 37.8050, nwLng: -122.4850, seLat: 37.7850, seLng: -122.4450 } },
   sea_cliff: { name: "Sea Cliff", bounds: { nwLat: 37.7900, nwLng: -122.4950, seLat: 37.7820, seLng: -122.4780 } },
   lands_end: { name: "Lands End", bounds: { nwLat: 37.7900, nwLng: -122.5150, seLat: 37.7780, seLng: -122.4950 } },
@@ -440,7 +441,7 @@ export default {
 
         // Check if this neighborhood has sensor data
         const neighborhoodData = data.neighborhoods[neighborhoodKey];
-        if (neighborhoodData.sensor_count === 0) {
+        if (!neighborhoodData || neighborhoodData.sensor_count === 0) {
           // Find nearest neighborhood with data
           const availableKeys = Object.keys(data.neighborhoods).filter(k => data.neighborhoods[k].sensor_count > 0);
           const nearestKey = findNearestNeighborhood(neighborhoodKey, availableKeys);
