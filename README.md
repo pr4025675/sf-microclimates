@@ -35,6 +35,9 @@ curl https://microclimates.solofounders.com/sf-weather/mission
   "name": "Mission District",
   "temp_f": 58,
   "humidity": 52,
+  "pm2_5": 12.1,
+  "aqi": 50,
+  "aqi_category": "Good",
   "sensor_count": 8
 }
 ```
@@ -113,6 +116,9 @@ Includes: `mission`, `castro`, `marina`, `soma`, `haight`, `noe_valley`, `outer_
   "name": "Outer Sunset",
   "temp_f": 52,
   "humidity": 78,
+  "pm2_5": 8.3,
+  "aqi": 35,
+  "aqi_category": "Good",
   "sensor_count": 15
 }
 ```
@@ -122,12 +128,47 @@ Includes: `mission`, `castro`, `marina`, `soma`, `haight`, `noe_valley`, `outer_
 {
   "updated": "2026-01-25T23:00:00.000Z",
   "neighborhoods": {
-    "mission": { "temp_f": 58, "humidity": 52, "sensor_count": 8 },
-    "outer_sunset": { "temp_f": 52, "humidity": 78, "sensor_count": 15 },
-    "marina": { "temp_f": 55, "humidity": 65, "sensor_count": 6 }
+    "mission": { "temp_f": 58, "humidity": 52, "pm2_5": 12.1, "aqi": 50, "aqi_category": "Good", "sensor_count": 8 },
+    "outer_sunset": { "temp_f": 52, "humidity": 78, "pm2_5": 8.3, "aqi": 35, "aqi_category": "Good", "sensor_count": 15 },
+    "marina": { "temp_f": 55, "humidity": 65, "pm2_5": 18.5, "aqi": 64, "aqi_category": "Moderate", "sensor_count": 6 }
   }
 }
 ```
+
+---
+
+## Air Quality
+
+Each response includes real-time air quality data from PurpleAir sensors.
+
+### Response Fields
+
+| Field | Description |
+|-------|-------------|
+| `pm2_5` | PM2.5 concentration in µg/m³ (10-minute rolling average) |
+| `aqi` | Air Quality Index (0-500 scale) |
+| `aqi_category` | Human-readable AQI category |
+
+### AQI Categories
+
+| AQI Range | Category | Description |
+|-----------|----------|-------------|
+| 0–50 | Good | Air quality is satisfactory |
+| 51–100 | Moderate | Acceptable; moderate health concern for sensitive individuals |
+| 101–150 | Unhealthy for Sensitive Groups | Sensitive groups may experience health effects |
+| 151–200 | Unhealthy | Everyone may begin to experience health effects |
+| 201–300 | Very Unhealthy | Health alert; everyone may experience serious effects |
+| 301+ | Hazardous | Health emergency; entire population affected |
+
+### Calculation Method
+
+AQI is calculated from PM2.5 using the **US EPA formula**:
+
+1. The `pm2.5_10minute` field (10-minute rolling average) is used for real-time responsiveness
+2. PM2.5 concentration is mapped to AQI breakpoints per EPA standards
+3. Linear interpolation determines the final AQI value
+
+This gives you accurate, hyperlocal air quality — not a city-wide average from a distant monitoring station.
 
 ---
 
