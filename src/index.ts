@@ -8,7 +8,7 @@ export interface Env {
   PURPLEAIR_API_KEY: string;
   CACHE: KVNamespace;
   CACHE_TTL_SECONDS: string;
-  RATE_LIMIT_PER_MINUTE: string;
+  RATE_LIMITER: RateLimit;
 }
 
 const LANDING_HTML = `<!DOCTYPE html>
@@ -41,7 +41,7 @@ const LANDING_HTML = `<!DOCTYPE html>
         <h1>SF Microclimates API</h1>
         <p>Real-time temperature & humidity data for San Francisco neighborhoods via PurpleAir sensors</p>
     </div>
-    
+
     <div class="container">
         <h2>Quick Start</h2>
         <pre><code>curl /sf-weather/mission
@@ -67,7 +67,7 @@ const LANDING_HTML = `<!DOCTYPE html>
         <p>San Francisco is famous for its microclimates. This API aggregates data from 400+ PurpleAir sensors to give you real temperature readings by neighborhood.</p>
         <p>Free to use. No API key required.</p>
     </div>
-    
+
     <footer>
         <p>Powered by <a href="https://www.purpleair.com/">PurpleAir</a> · <a href="https://github.com/solo-founders/sf-microclimates">View on GitHub</a></p>
     </footer>
@@ -154,20 +154,6 @@ interface WeatherResponse {
   neighborhoods: Record<string, NeighborhoodData>;
 }
 
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(ip: string, limit: number): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + 60000 });
-    return true;
-  }
-  if (record.count >= limit) return false;
-  record.count++;
-  return true;
-}
-
 function isInBounds(lat: number, lng: number, bounds: { nwLat: number; nwLng: number; seLat: number; seLng: number }): boolean {
   return lat <= bounds.nwLat && lat >= bounds.seLat && lng >= bounds.nwLng && lng <= bounds.seLng;
 }
@@ -182,14 +168,14 @@ function assignToNeighborhood(lat: number, lng: number): string | null {
 async function fetchPurpleAirData(apiKey: string): Promise<PurpleAirSensor[]> {
   const fields = "sensor_index,latitude,longitude,temperature,humidity";
   const url = `https://api.purpleair.com/v1/sensors?fields=${fields}&location_type=0&nwlat=${SF_BOUNDS.nwLat}&nwlng=${SF_BOUNDS.nwLng}&selat=${SF_BOUNDS.seLat}&selng=${SF_BOUNDS.seLng}`;
-  
+
   const response = await fetch(url, { headers: { "X-API-Key": apiKey } });
   if (!response.ok) throw new Error(`PurpleAir API error: ${response.status}`);
-  
+
   const data = await response.json() as { fields: string[]; data: (number | null)[][] };
   const fieldIndices: Record<string, number> = {};
   data.fields.forEach((field, idx) => { fieldIndices[field] = idx; });
-  
+
   return data.data.map(row => ({
     sensor_index: row[fieldIndices.sensor_index] as number,
     latitude: row[fieldIndices.latitude] as number,
@@ -204,7 +190,7 @@ function aggregateByNeighborhood(sensors: PurpleAirSensor[]): Record<string, Nei
   for (const key of Object.keys(SF_NEIGHBORHOODS)) {
     neighborhoodSensors[key] = { temps: [], humidities: [] };
   }
-  
+
   for (const sensor of sensors) {
     const neighborhood = assignToNeighborhood(sensor.latitude, sensor.longitude);
     if (neighborhood && neighborhoodSensors[neighborhood]) {
@@ -216,11 +202,11 @@ function aggregateByNeighborhood(sensors: PurpleAirSensor[]): Record<string, Nei
       }
     }
   }
-  
+
   const result: Record<string, NeighborhoodData> = {};
   const TEMP_CORRECTION_F = 8;
   for (const [key, data] of Object.entries(neighborhoodSensors)) {
-    const avgTemp = data.temps.length > 0 
+    const avgTemp = data.temps.length > 0
       ? Math.round(data.temps.reduce((a, b) => a + b, 0) / data.temps.length) - TEMP_CORRECTION_F
       : null;
     const avgHumidity = data.humidities.length > 0
@@ -234,16 +220,16 @@ function aggregateByNeighborhood(sensors: PurpleAirSensor[]): Record<string, Nei
 async function getWeatherData(env: Env): Promise<WeatherResponse> {
   const cacheKey = "sf-weather-data";
   const cacheTtl = parseInt(env.CACHE_TTL_SECONDS || "900", 10);
-  
+
   if (env.CACHE) {
     const cached = await env.CACHE.get(cacheKey);
     if (cached) return JSON.parse(cached);
   }
-  
+
   const sensors = await fetchPurpleAirData(env.PURPLEAIR_API_KEY);
   const neighborhoods = aggregateByNeighborhood(sensors);
   const response: WeatherResponse = { updated: new Date().toISOString(), neighborhoods };
-  
+
   if (env.CACHE) {
     await env.CACHE.put(cacheKey, JSON.stringify(response), { expirationTtl: cacheTtl });
   }
@@ -269,13 +255,13 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const path = url.pathname;
-    
+
     const clientIP = request.headers.get("CF-Connecting-IP") || "unknown";
-    const rateLimit = parseInt(env.RATE_LIMIT_PER_MINUTE || "100", 10);
-    if (!checkRateLimit(clientIP, rateLimit)) {
+    const { success } = await env.RATE_LIMITER.limit({ key: clientIP });
+    if (!success) {
       return errorResponse("Rate limit exceeded. Try again in a minute.", 429);
     }
-    
+
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -285,14 +271,14 @@ export default {
         }
       });
     }
-    
+
     if (request.method !== "GET") return errorResponse("Method not allowed", 405);
-    
+
     try {
       if (path === "/sf-weather" || path === "/sf-weather/") {
         return jsonResponse(await getWeatherData(env));
       }
-      
+
       const neighborhoodMatch = path.match(/^\/sf-weather\/([a-z_]+)$/);
       if (neighborhoodMatch) {
         const neighborhoodKey = neighborhoodMatch[1];
@@ -307,19 +293,19 @@ export default {
           ...data.neighborhoods[neighborhoodKey]
         });
       }
-      
+
       if (path === "/neighborhoods" || path === "/neighborhoods/") {
         return jsonResponse({
           neighborhoods: Object.entries(SF_NEIGHBORHOODS).map(([key, val]) => ({ key, name: val.name }))
         });
       }
-      
+
       if (path === "/" || path === "") {
         return new Response(LANDING_HTML, {
           headers: { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "public, max-age=3600" }
         });
       }
-      
+
       return errorResponse("Not found. Try /sf-weather or /sf-weather/:neighborhood", 404);
     } catch (error) {
       console.error("Error:", error);
